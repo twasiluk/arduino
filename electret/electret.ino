@@ -15,8 +15,8 @@ void minMax()
   int mn = 1024;     // mn only decreases
   int mx = 0;        // mx only increases
 
-  // Perform 10000 reads. Update mn and mx for each one.
-  for (int i = 0; i < 10000; ++i) {
+  // Perform 9999 reads. Update mn and mx for each one.
+  for (int i = 0; i < 9999; ++i) {
     int val = analogRead(analogPin);
     mn = min(mn, val);
     mx = max(mx, val);
