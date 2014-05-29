@@ -9,13 +9,13 @@ long oldPosition = -999;
 long newPosition = 50;
 int encoderMode = 2;
 int encoderModeMax = 2;
-int encoderModeValues[3] = {100, 100, 100};
+int encoderModeValues[3] = {100, 1, 255};
 
 /*** BUTTON ***/
 int swhPin = 4;  // Encoder's switch pin
 long lastButtonPress = 1000000000;
 volatile int buttonPressed = 1;
-long buttonPressTimeout = 100;
+long buttonPressTimeout = 170;
 
 /*** LEDS ***/
 #include "FastLED.h"
@@ -24,8 +24,6 @@ long buttonPressTimeout = 100;
 #define CLOCK_PIN 13
 CRGB leds[NUM_LEDS];
 CRGB currentColor = CRGB::Blue;
-int currentHue = 1;
-int currentBrightness = 255;
 
 /*** TIME ***/
 #include <Time.h>
@@ -35,7 +33,7 @@ void setup()
   Serial.begin(9600);
   setupButton();
   setupRtc();
-  FastLED.addLeds<WS2801, DATA_PIN, CLOCK_PIN, RBG>(leds, NUM_LEDS);
+  setupLeds();
 }
 
 void setupButton()
@@ -53,6 +51,12 @@ void setupRtc()
   unsigned long t = 1401393985 + 30;
   Teensy3Clock.set(t);
   setTime(t);
+}
+
+void setupLeds()
+{
+  FastLED.addLeds<WS2801, DATA_PIN, CLOCK_PIN, RBG>(leds, NUM_LEDS);
+  myEnc.write(newPosition);
 }
 
 time_t getTeensy3Time()
@@ -121,14 +125,10 @@ void onButtonPress()
   // Increment encoder mode limiting to encoderModeMax
   encoderMode = (encoderMode + 1) % (encoderModeMax + 1);  
   
-  Serial.println(encoderModeMax);
+  //Serial.println(encoderModeMax);
   Serial.print("Button mode: ");
   Serial.println(encoderMode);
   buttonPressed = 0;
-  
-  /*** JUST DO IT ***/
-  return;
-  
   
   int prevMode = getPreviousEncoderMode();
   
@@ -157,9 +157,15 @@ int getPreviousEncoderMode()
 
 void bargraph(float percent)
 {
-  Serial.print("Bargraph ");
-  int lightUp = round(NUM_LEDS * percent);
-  Serial.print(lightUp);
+  //Serial.print("Bargraph ");
+  int lightUp;
+  if (encoderMode == 0) {
+    lightUp = round(NUM_LEDS * percent); 
+  } else {
+    lightUp = round(NUM_LEDS * encoderModeValues[0] / encoderSteps);
+  }
+  
+  //Serial.print(lightUp);
   for(int dot = 0; dot < NUM_LEDS; dot++) { 
       if (dot < lightUp) {
             leds[dot] = currentColor;
@@ -169,20 +175,20 @@ void bargraph(float percent)
     }    
 
   FastLED.show();
-  Serial.println("");
+  //Serial.println("");
 }
 
 void cycleColor(float percent)
 {
-  currentHue = round(percent * 255);
-  currentColor = CHSV(currentHue, currentBrightness, 255);  
+  encoderModeValues[1] = round(percent * 255);
+  currentColor = CHSV(encoderModeValues[1], 255, encoderModeValues[2]);
   bargraph(1.0);
 }
 
 void changeBrightness(float percent)
 {
-  currentBrightness = round(percent * 255);
-  currentColor = CHSV(currentHue, 255, currentBrightness);
+  encoderModeValues[2] = round(percent * 255);
+  currentColor = CHSV(encoderModeValues[1], 255, encoderModeValues[2]);
   bargraph(1.0);
 }
   
