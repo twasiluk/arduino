@@ -68,10 +68,10 @@ void setup()
   // set up the LCD's number of columns and rows: 
   lcd.begin(16, 2);
   // Print a message to the LCD.
-  lcd.print("Czas swiatla:");
+  lcd.print("Skarbonka Tymka");
   
   // Poczatkowe x sekund swiatla
-  addLightTime(15);
+  //addLightTime(15);
 }
 
 void loop()
@@ -119,8 +119,15 @@ void loop()
   
   int lightSecs = getLightTime();
   //Serial.println(lightSecs);
-  lcd.print(lightSecs);
+  //lcd.print(lightSecs);
   //lcd.println("     ");
+  
+  int aInt = floor(total);
+  int aDec = int(total * 100) % 100;
+  lcd.print(aInt);
+  lcd.print(" zl ");
+  lcd.print(aDec);
+  lcd.print(" gr ");
 
   delay(150);
 }
